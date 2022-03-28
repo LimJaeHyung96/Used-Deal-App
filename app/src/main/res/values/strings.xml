@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">fastcampus_14</string>
+    <string name="home_text">홈</string>
+    <string name="chat_text">채팅</string>
+    <string name="my_page_text">나의 정보</string>
 </resources>
