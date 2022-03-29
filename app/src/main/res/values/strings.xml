@@ -3,4 +3,5 @@
     <string name="home_text">홈</string>
     <string name="chat_text">채팅</string>
     <string name="my_page_text">나의 정보</string>
+    <string name="home_fragment_actionbar_text">중고 거래</string>
 </resources>
