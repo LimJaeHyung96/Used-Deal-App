@@ -1,5 +1,6 @@
 package com.example.fastcampus_14.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fastcampus_14.DBKey.Companion.DB_ARTICLES
 import com.example.fastcampus_14.R
 import com.example.fastcampus_14.databinding.FragmentHomeBinding
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ChildEventListener
@@ -62,10 +64,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         fragmentHomeBinding.articleRecyclerView.layoutManager = LinearLayoutManager(context)
         fragmentHomeBinding.articleRecyclerView.adapter = articleAdapter
 
+        fragmentHomeBinding.addFloatingButton.setOnClickListener {
+            //todo 로그인 기능 구현 후에 주석 지우기
+            context?.let {
+//                if(auth.currentUser != null) {
+                    val intent = Intent(it, AddArticleActivity::class.java)
+                    startActivity(intent)
+//                } else {
+//                    Snackbar.make(view, "로그인 후 사용해주세요", Snackbar.LENGTH_SHORT).show()
+//                }
+            }
+        }
+
         //데이터를 가져오는 방법 2가지
         //1. addChildEventListener - 이벤트가 발생할 때 마다 등록이 된다
         //2. addListenerForSingleValueEvent - 즉시성, 1회만 호출이 된다
-
         articleDB.addChildEventListener(listener)
     }
 
