@@ -157,11 +157,11 @@ class AddArticleActivity : AppCompatActivity() {
     }
 
     private fun showProgress() {
-        findViewById<ProgressBar>(R.id.progresBar).isVisible = true
+        findViewById<ProgressBar>(R.id.progressBar).isVisible = true
     }
 
     private fun hideProgress() {
-        findViewById<ProgressBar>(R.id.progresBar).isVisible = false
+        findViewById<ProgressBar>(R.id.progressBar).isVisible = false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

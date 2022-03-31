@@ -8,4 +8,9 @@
     <string name="title_hint_text">글 제목</string>
     <string name="price_hint_text">가격</string>
     <string name="add_image_btn_text">이미지 등록</string>
+    <string name="email_hint_text">이메일</string>
+    <string name="password_hint_text">패스워드</string>
+    <string name="sign_in_btn_text">로그인</string>
+    <string name="sign_up_btn_text">회원가입</string>
+    <string name="my_page_toolbar_text">마이 페이지</string>
 </resources>
