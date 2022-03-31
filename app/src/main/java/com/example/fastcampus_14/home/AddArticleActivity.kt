@@ -1,17 +1,21 @@
 package com.example.fastcampus_14.home
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.example.fastcampus_14.DBKey.Companion.DB_ARTICLES
 import com.example.fastcampus_14.R
 import com.google.android.material.snackbar.Snackbar
@@ -23,11 +27,11 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 
-class AddArticleActivity: AppCompatActivity() {
+class AddArticleActivity : AppCompatActivity() {
 
     private var selectedUri: Uri? = null
 
-    private val auth : FirebaseAuth by lazy {
+    private val auth: FirebaseAuth by lazy {
         Firebase.auth
     }
 
@@ -35,11 +39,11 @@ class AddArticleActivity: AppCompatActivity() {
         Firebase.storage
     }
 
-    private val articleDB: DatabaseReference by lazy{
+    private val articleDB: DatabaseReference by lazy {
         Firebase.database.reference.child(DB_ARTICLES)
     }
 
-    private val addArticleLayout : View by lazy {
+    private val addArticleLayout: View by lazy {
         findViewById(R.id.addArticleLayout)
     }
 
@@ -47,33 +51,85 @@ class AddArticleActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_article)
 
+        initAddImageButton()
+        initSubmitButton()
+    }
+
+    private fun initSubmitButton() {
+        findViewById<Button>(R.id.submitButton).setOnClickListener {
+            val title = findViewById<EditText>(R.id.titleEditText).text.toString()
+            val price = findViewById<EditText>(R.id.priceEditText).text.toString()
+            Log.d("제목", title)
+            Log.d("가격", price)
+            val sellerId = auth.currentUser?.uid.orEmpty()
+
+            showProgress()
+
+            if (selectedUri != null) {
+                val photoUri = selectedUri ?: return@setOnClickListener
+                uploadPhoto(photoUri,
+                    successHandler = { uri ->
+                        uploadArticle(sellerId, title, price, uri)
+                    },
+                    errorHandler = {
+                        Snackbar.make(addArticleLayout, "사진 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT)
+                            .show()
+                        hideProgress()
+                    }
+                )
+            } else {
+                uploadArticle(sellerId, title, price, "")
+            }
+        }
+    }
+
+    private fun initAddImageButton() {
         findViewById<Button>(R.id.imageAddButton).setOnClickListener {
-            when{
+            when {
                 ContextCompat.checkSelfPermission(
                     this,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                    Manifest.permission.READ_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     startContentProvider()
                 }
-                shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE) -> {
+                shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE) -> {
                     showPermissionContextPopup()
                 }
                 else -> {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1010)
+                    requestPermissions(
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        1010
+                    )
                 }
             }
         }
+    }
 
-        findViewById<Button>(R.id.submitButton).setOnClickListener {
-            val title = findViewById<EditText>(R.id.titleEditText).toString()
-            val price = findViewById<EditText>(R.id.priceEditText).toString()
-            val sellerId = auth.currentUser?.uid.orEmpty()
+    private fun uploadPhoto(uri: Uri, successHandler: (String) -> Unit, errorHandler: () -> Unit) {
+        val fileName = "${System.currentTimeMillis()}.png"
+        storage.reference.child("article/photo").child(fileName)
+            .putFile(uri)
+            .addOnCompleteListener{
+                if(it.isSuccessful){
+                    storage.reference.child("article/photo").child(fileName).downloadUrl
+                        .addOnSuccessListener { uri ->
+                            successHandler(uri.toString())
+                        }
+                        .addOnFailureListener {
+                            errorHandler()
+                        }
+                } else {
+                    errorHandler()
+                }
+            }
+    }
 
-            val model = ArticleModel(sellerId, title, System.currentTimeMillis(), "${price}원", "")
-            articleDB.push().setValue(model)
+    private fun uploadArticle(sellerId: String, title: String, price: String, imageUrl: String) {
+        val model = ArticleModel(sellerId, title, System.currentTimeMillis(), "${price}원", imageUrl)
+        articleDB.push().setValue(model)
 
-            finish()
-        }
+        hideProgress()
+        finish()
     }
 
     override fun onRequestPermissionsResult(
@@ -83,9 +139,9 @@ class AddArticleActivity: AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when(requestCode) {
+        when (requestCode) {
             1010 -> {
-                if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startContentProvider()
                 } else {
                     Snackbar.make(addArticleLayout, "권한을 거부하셨습니다.", Snackbar.LENGTH_SHORT).show()
@@ -100,17 +156,25 @@ class AddArticleActivity: AppCompatActivity() {
         startActivityForResult(intent, 2020)
     }
 
+    private fun showProgress() {
+        findViewById<ProgressBar>(R.id.progresBar).isVisible = true
+    }
+
+    private fun hideProgress() {
+        findViewById<ProgressBar>(R.id.progresBar).isVisible = false
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(resultCode != Activity.RESULT_OK){
+        if (resultCode != Activity.RESULT_OK) {
             return
         }
 
-        when(requestCode){
+        when (requestCode) {
             2020 -> {
                 val uri = data?.data
-                if(uri != null){
+                if (uri != null) {
                     findViewById<ImageView>(R.id.addImageView).setImageURI(uri)
                     selectedUri = uri
                 } else {
@@ -127,7 +191,7 @@ class AddArticleActivity: AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("권한 요청 알림")
             .setMessage("사진을 가져오기 위해선 권한이 필요합니다")
-            .setPositiveButton("동의") {_, _ ->
+            .setPositiveButton("동의") { _, _ ->
                 requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1010)
             }
             .create()
