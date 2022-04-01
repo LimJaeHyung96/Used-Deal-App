@@ -10,7 +10,7 @@ import com.example.fastcampus_14.databinding.ItemArticleBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ArticleAdapter: ListAdapter<ArticleModel, ArticleAdapter.ArticleItemViewHolder>(diffUtil) {
+class ArticleAdapter(val onItemClicked: (ArticleModel) -> Unit): ListAdapter<ArticleModel, ArticleAdapter.ArticleItemViewHolder>(diffUtil) {
 
     inner class ArticleItemViewHolder(private val binding: ItemArticleBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(articleModel: ArticleModel){
@@ -25,6 +25,10 @@ class ArticleAdapter: ListAdapter<ArticleModel, ArticleAdapter.ArticleItemViewHo
                 Glide.with(binding.thumbnailImageView)
                     .load(articleModel.imageUrl)
                     .into(binding.thumbnailImageView)
+            }
+
+            binding.root.setOnClickListener {
+                onItemClicked(articleModel)
             }
         }
     }
@@ -46,7 +50,6 @@ class ArticleAdapter: ListAdapter<ArticleModel, ArticleAdapter.ArticleItemViewHo
             override fun areContentsTheSame(oldItem: ArticleModel, newItem: ArticleModel): Boolean {
                 return oldItem == newItem
             }
-
         }
     }
 }
