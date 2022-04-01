@@ -1,5 +1,6 @@
 package com.example.fastcampus_14.chatlist
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fastcampus_14.DBKey.Companion.CHILD_CHAT
 import com.example.fastcampus_14.DBKey.Companion.DB_USERS
 import com.example.fastcampus_14.R
+import com.example.fastcampus_14.chatdetail.ChatRoomActivity
 import com.example.fastcampus_14.databinding.FragmentChatListBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -34,8 +36,14 @@ class ChatListFragment :  Fragment(R.layout.fragment_chat_list) {
         val fragmentChatListBinding = FragmentChatListBinding.bind(view)
         binding = fragmentChatListBinding
 
-        chatListAdapter = ChatListAdapter(onItemClicked = { chatListItem ->
+        chatRoomList.clear()
 
+        chatListAdapter = ChatListAdapter(onItemClicked = { chatListItem ->
+            context?.let{ context ->
+                val intent = Intent(context, ChatRoomActivity::class.java)
+                intent.putExtra("chatKey", chatListItem.key)
+                startActivity(intent)
+            }
         })
 
         fragmentChatListBinding.chatListRecyclerView.layoutManager = LinearLayoutManager(context)

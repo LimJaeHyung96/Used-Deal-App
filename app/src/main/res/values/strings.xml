@@ -13,4 +13,7 @@
     <string name="sign_in_btn_text">로그인</string>
     <string name="sign_up_btn_text">회원가입</string>
     <string name="my_page_toolbar_text">마이 페이지</string>
+    <string name="send_text">전송</string>
+    <string name="chat_list_text">채팅 목록</string>
+    <string name="chat_hint_text">판매자와 거래해보세요!</string>
 </resources>
